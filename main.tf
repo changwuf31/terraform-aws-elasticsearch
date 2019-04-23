@@ -158,13 +158,36 @@ data "aws_iam_policy_document" "default" {
       values = ["${distinct(compact(var.iam_source_ips))}"]
     }    
   }
-
 }
 
-resource "aws_elasticsearch_domain_policy" "default" {
+data "aws_iam_policy_document" "open" {
+  count = "${var.enabled == "true" ? 1 : 0}"
+
+  statement {
+    actions = ["${distinct(compact(var.iam_actions))}"]
+
+    resources = [
+      "${join("", aws_elasticsearch_domain.default.*.arn)}",
+      "${join("", aws_elasticsearch_domain.default.*.arn)}/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+#resource "aws_elasticsearch_domain_policy" "default" {
+#  count           = "${var.enabled == "true" ? 1 : 0}"
+#  domain_name     = "${module.label.id}"
+#  access_policies = "${join("", data.aws_iam_policy_document.default.*.json)}"
+#}
+
+resource "aws_elasticsearch_domain_policy" "open" {
   count           = "${var.enabled == "true" ? 1 : 0}"
   domain_name     = "${module.label.id}"
-  access_policies = "${join("", data.aws_iam_policy_document.default.*.json)}"
+  access_policies = "${join("", data.aws_iam_policy_document.open.*.json)}"
 }
 
 module "domain_hostname" {
