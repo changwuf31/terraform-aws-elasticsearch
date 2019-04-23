@@ -137,6 +137,28 @@ data "aws_iam_policy_document" "default" {
       identifiers = ["${distinct(compact(var.iam_role_arns))}"]
     }
   }
+
+  statement {
+    actions = ["${distinct(compact(var.iam_actions))}"]
+
+    resources = [
+      "${join("", aws_elasticsearch_domain.default.*.arn)}",
+      "${join("", aws_elasticsearch_domain.default.*.arn)}/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "IpAddress"
+      variable = "aws:SourceIp"
+
+      values = ["${distinct(compact(var.iam_source_ips))}"]
+    }    
+  }
+
 }
 
 resource "aws_elasticsearch_domain_policy" "default" {

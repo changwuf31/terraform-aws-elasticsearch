@@ -88,6 +88,12 @@ variable "iam_role_arns" {
   description = "List of IAM role ARNs to permit access to the Elasticsearch domain"
 }
 
+variable "iam_source_ips" {
+  type        = "list"
+  default     = []
+  description = "List of IAM ip addresses to permit access to the Elasticsearch domain"
+}
+
 variable "iam_actions" {
   type        = "list"
   default     = []
